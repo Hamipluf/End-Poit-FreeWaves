@@ -2,7 +2,6 @@ import { z, ZodError } from "zod";
 var STORE = [];
 
 export default async function handler(req, res) {
-
   const objectSchema = z.object({
     name: z.string().min(1, "Name es requerido"),
     image: z.string().min(1, "image es requerida"),
@@ -17,6 +16,7 @@ export default async function handler(req, res) {
       // console.log(schemaResult);
       const obj = req.body;
       STORE.push(obj);
+      obj.timestamp = new Date().getTime();
       console.log(STORE);
       return res.json("Objeto recibido");
     } catch (e) {
