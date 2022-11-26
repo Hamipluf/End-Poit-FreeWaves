@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { io } from "socket.io-client";
+
+let socket;
 
 export default function Home() {
   const [error, setError] = useState();
+  const [data, setData] = useState();
+  const [input, setInput] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +26,8 @@ export default function Home() {
         }
       )
       .then((res) => {
-        console.log(res);
+        // setData(res.data);
+        console.log(res.data);
       })
       .catch((err) => {
         console.error(err.response);
@@ -29,6 +35,28 @@ export default function Home() {
         setError("Complete el formulario");
       });
     // console.log(formData);
+  };
+
+  useEffect(() => socketInitializer(), []);
+
+  const socketInitializer = () => {
+    fetch("/api/socket")
+      .then((res) => {
+        socket = io();
+        socket.on("connect", () => {
+          console.log("connected");
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+  const onChangeHandler = (e) => {
+    console.log(e.nativeEvent.data);
+    setInput(e.target.value);
+    //El primer parámetro de socket.emit() es el nombre único del evento, que es input-change, y el segundo parámetro es el mensaje.
+    //En nuestro caso, es el valor del campo de entrada.
+    socket.emit("input-change", e.nativeEvent.data);
   };
 
   return (
@@ -46,6 +74,14 @@ export default function Home() {
             </div>
           )}
           <button>Enviar Datos</button>
+          <h3>Socket FreeWaves</h3>
+        </form>
+        <form className="form">
+          <input
+            type="text"
+            onChange={onChangeHandler}
+            placeholder="Type something"
+          />
         </form>
       </div>
     </>
