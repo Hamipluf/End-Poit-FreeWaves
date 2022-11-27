@@ -1,4 +1,4 @@
-import e from "express";
+import { Server } from "Socket.IO"; // Conecto el servver HTTP a Socket.io, utilizamos la clase Server del paquete Socket.IO.
 import { z, ZodError } from "zod";
 var STORE = []; // objetos
 
@@ -33,11 +33,12 @@ export default async function handler(req, res) {
       } else {
         evento_en_store.count++;
         evento_en_store.timestamp = new Date().getTime(); // creando el timestamp en cada evento nuevo
-        STORE.filter((evento_en_store) => evento_en_store.type !== obj.type);
+        STORE = STORE.filter(
+          (evento_en_store) => evento_en_store.type !== obj.type
+        );
       }
-      // console.log(STORE);
 
-      // return res.json(contador); // retorna un array con objetos dentro
+      // console.log(STORE);
       return res.json(STORE, "objeto recivido");
     } catch (e) {
       if (e instanceof ZodError) {
@@ -55,4 +56,31 @@ export default async function handler(req, res) {
   } else {
     return res.status(400).json({ error: "El metodo no existe" });
   }
+}
+
+export async function SocketHandler(req, res) {
+  const io = new Server(res.socket.server); //creo la conexion del server con WS
+
+  try {
+    res.socket.server.io = io;
+    console.log("Socket is initializing");
+
+    io.on("connection", (socket) => {
+      console.log("nueva conexion:", socket.id);
+
+      socket.emit("server:evento");
+
+      socket.on("client:obj", (obj) => {
+        //recibiendo el objeto desde el cliente
+        socket.broadcast.emit('server:sendevent', obj) //emite un mensaje a todos los clientes excepto al que emitió el evento client:obj
+        console.log(obj);
+      });
+
+      socket.broadcast.emit('server:sendSTORE', STORE)
+      
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  res.end();
 }

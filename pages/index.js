@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { useRef } from "react";
 
 let socket;
 
 export default function Home() {
   const [error, setError] = useState();
-  const [data, setData] = useState();
-  const [input, setInput] = useState("");
+  const [msg, setmsg] = useState();
+  const nameRef = useRef();
+  const imageRef = useRef();
+  const messageRef = useRef();
+  const typeRef = useRef();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,15 +38,14 @@ export default function Home() {
         console.error(err.response.data);
         setError("Complete el formulario");
       });
-    // console.log(formData);
   };
 
   useEffect(() => socketInitializer(), []);
 
-  const socketInitializer = () => {
-    fetch("/api/socket")
+  const socketInitializer = (e) => {
+    fetch("/api/date-time")
       .then((res) => {
-        socket = io();
+        const socket = io();
         socket.on("connect", () => {
           console.log("connected");
         });
@@ -51,12 +54,25 @@ export default function Home() {
         console.error(err);
       });
   };
-  const onChangeHandler = (e) => {
-    console.log(e.nativeEvent.data);
-    setInput(e.target.value);
-    //El primer parámetro de socket.emit() es el nombre único del evento, que es input-change, y el segundo parámetro es el mensaje.
-    //En nuestro caso, es el valor del campo de entrada.
-    socket.emit("input-change", e.nativeEvent.data);
+
+  const handleSocket = (e) => {
+    e.preventDefault;
+    const socket = io();
+    try {
+      socket.on("server:evento", () => {
+        socket.emit("client:obj", {
+          name: nameRef.current.value, //string
+          image: imageRef.current.value, //string
+          message: messageRef.current.value, //string
+          type: typeRef.current.value,
+        });
+      });
+      socket.on("server:sendevent", (e) => {
+        setmsg(e.name);
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -64,24 +80,24 @@ export default function Home() {
       <div>
         <h1>HOLA FREEEWAVES</h1>
         <form onSubmit={handleSubmit} className="form">
-          <input type="text" name="name" placeholder="name" />
-          <input type="text" name="image" placeholder="image" />
-          <input type="text" name="message" placeholder="message" />
-          <input type="text/num" name="type" placeholder="type" />
+          <input ref={nameRef} type="text" name="name" placeholder="name" />
+          <input ref={imageRef} type="text" name="image" placeholder="image" />
+          <input
+            ref={messageRef}
+            type="text"
+            name="message"
+            placeholder="message"
+          />
+          <input ref={typeRef} type="text/num" name="type" placeholder="type" />
           {error && (
             <div>
               <h3>{error}</h3>
             </div>
           )}
-          <button>Enviar Datos</button>
+          <button onClick={handleSocket}>Enviar Datos</button>
           <h3>Socket FreeWaves</h3>
-        </form>
-        <form className="form">
-          <input
-            type="text"
-            onChange={onChangeHandler}
-            placeholder="Type something"
-          />
+          {/* no lo pinta al msg */}
+          <h2>{msg}</h2> 
         </form>
       </div>
     </>
