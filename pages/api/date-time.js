@@ -60,24 +60,25 @@ export async function handler(req, res) {
 }
 
 var DATA_WS = [];
-export default async function SocketHandler(req, res) {
-  try {
-    const io = new Server(res.socket.server, { pingTimeout: 60000 }); //creo la conexion del server con WS
-
+const SocketHandler = (req, res) => {
+  if (res.socket.server.io) {
+    console.log("Socket ya esta inicializado");
+  } else {
+    console.log("Socket esta inicializando");
+    const io = new Server(res.socket.server);
     res.socket.server.io = io;
     io.on("connection", (socket) => {
-      console.log("nueva conexion:", socket.id);
-
+      console.log("id user : ", socket.id);
       socket.on("cliente:EVENTO", (data) => {
-        // console.log("EVENTO: ",data)
+        // console.log("EVENTO: ", data);
         const dataEvento = { ...data, id: RandomId() };
-        // console.log(dataEvento)
+        // console.log(dataEvento);
         DATA_WS.push(dataEvento);
         socket.broadcast.emit("server:EVENTO", dataEvento);
       });
     });
-  } catch (err) {
-    console.log(err);
   }
   res.end();
-}
+};
+
+export default SocketHandler;

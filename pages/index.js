@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { useRef } from "react";
-require("events").EventEmitter.defaultMaxListeners = 15;
 
 export default function Home() {
   const [error, setError] = useState();
@@ -45,29 +44,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    socketInitializer();
-  });
+    const socketInitializer = async () => {
+      await fetch("/api/date-time");
 
-  const socketInitializer = async () => {
-    await fetch("/api/date-time", {})
-      .then((res) => {
-        socket.on("connect", () => {
-          console.log("connected");
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  };
-
-  const handleSocket =  (e) => {
-    e.preventDefault();
-    try {
-      socket.bro.emit("cliente:EVENTO", {
-        name: nameRef.current.value, //string
-        image: imageRef.current.value, //string
-        message: messageRef.current.value, //string
-        type: typeRef.current.value,
+      socket.on("connect", () => {
+        console.log("connected");
       });
       socket.on("server:EVENTO", (evento) => {
         // console.log(evento);
@@ -76,6 +57,20 @@ export default function Home() {
         setName(evento.name);
         setType(evento.type);
         setMsg(evento.message);
+      });
+    };
+
+    return socketInitializer;
+  });
+
+  const handleSocket = (e) => {
+    e.preventDefault();
+    try {
+      socket.emit("cliente:EVENTO", {
+        name: nameRef.current.value, //string
+        image: imageRef.current.value, //string
+        message: messageRef.current.value, //string
+        type: typeRef.current.value,
       });
     } catch (error) {
       console.log(error);
