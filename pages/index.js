@@ -2,16 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { useRef } from "react";
-
-let socket;
+require("events").EventEmitter.defaultMaxListeners = 15;
 
 export default function Home() {
   const [error, setError] = useState();
-  const [msg, setmsg] = useState();
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+  const [type, setType] = useState("");
+  const [msg, setMsg] = useState("");
+  const [id, setId] = useState();
   const nameRef = useRef();
   const imageRef = useRef();
   const messageRef = useRef();
   const typeRef = useRef();
+  const socket = io();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,38 +44,41 @@ export default function Home() {
       });
   };
 
-  useEffect(() => socketInitializer(), []);
+  useEffect(() => {
+    socketInitializer();
+  });
 
-  const socketInitializer = (e) => {
-    fetch("/api/date-time")
+  const socketInitializer = async () => {
+    await fetch("/api/date-time", {})
       .then((res) => {
-        const socket = io();
         socket.on("connect", () => {
           console.log("connected");
         });
       })
-      .catch((err) => {
-        console.error(err);
+      .catch((e) => {
+        console.log(e);
       });
   };
 
-  const handleSocket = (e) => {
-    e.preventDefault;
-    const socket = io();
+  const handleSocket =  (e) => {
+    e.preventDefault();
     try {
-      socket.on("server:evento", () => {
-        socket.emit("client:obj", {
-          name: nameRef.current.value, //string
-          image: imageRef.current.value, //string
-          message: messageRef.current.value, //string
-          type: typeRef.current.value,
-        });
+      socket.bro.emit("cliente:EVENTO", {
+        name: nameRef.current.value, //string
+        image: imageRef.current.value, //string
+        message: messageRef.current.value, //string
+        type: typeRef.current.value,
       });
-      socket.on("server:sendevent", (e) => {
-        setmsg(e.name);
+      socket.on("server:EVENTO", (evento) => {
+        // console.log(evento);
+        setId(evento.id);
+        setImage(evento.image);
+        setName(evento.name);
+        setType(evento.type);
+        setMsg(evento.message);
       });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -95,9 +102,16 @@ export default function Home() {
             </div>
           )}
           <button onClick={handleSocket}>Enviar Datos</button>
-          <h3>Socket FreeWaves</h3>
-          {/* no lo pinta al msg */}
-          <h2>{msg}</h2> 
+          <div className="socket">
+            <h3>Socket FreeWaves</h3>
+            <ul className="ul">
+              <label>Id: {id}</label>
+              <li>Name: {name}</li>
+              <li>Image: {image}</li>
+              <li>Message: {msg}</li>
+              <li>Type: {type}</li>
+            </ul>
+          </div>
         </form>
       </div>
     </>

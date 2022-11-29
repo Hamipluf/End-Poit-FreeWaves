@@ -1,8 +1,9 @@
-import { Server } from "Socket.IO"; // Conecto el servver HTTP a Socket.io, utilizamos la clase Server del paquete Socket.IO.
+import { Server } from "socket.io"; // Conecto el servver HTTP a Socket.io, utilizamos la clase Server del paquete Socket.IO.
 import { z, ZodError } from "zod";
+import { v4 as RandomId } from "uuid";
 var STORE = []; // objetos
 
-export default async function handler(req, res) {
+export async function handler(req, res) {
   const objectSchema = z.object({
     // Verificacion Inputs
     name: z.string().min(1, "Name es requerido"),
@@ -58,26 +59,22 @@ export default async function handler(req, res) {
   }
 }
 
-export async function SocketHandler(req, res) {
-  const io = new Server(res.socket.server); //creo la conexion del server con WS
-
+var DATA_WS = [];
+export default async function SocketHandler(req, res) {
   try {
-    res.socket.server.io = io;
-    console.log("Socket is initializing");
+    const io = new Server(res.socket.server, { pingTimeout: 60000 }); //creo la conexion del server con WS
 
+    res.socket.server.io = io;
     io.on("connection", (socket) => {
       console.log("nueva conexion:", socket.id);
 
-      socket.emit("server:evento");
-
-      socket.on("client:obj", (obj) => {
-        //recibiendo el objeto desde el cliente
-        socket.broadcast.emit('server:sendevent', obj) //emite un mensaje a todos los clientes excepto al que emitió el evento client:obj
-        console.log(obj);
+      socket.on("cliente:EVENTO", (data) => {
+        // console.log("EVENTO: ",data)
+        const dataEvento = { ...data, id: RandomId() };
+        // console.log(dataEvento)
+        DATA_WS.push(dataEvento);
+        socket.broadcast.emit("server:EVENTO", dataEvento);
       });
-
-      socket.broadcast.emit('server:sendSTORE', STORE)
-      
     });
   } catch (err) {
     console.log(err);
