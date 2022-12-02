@@ -10,6 +10,12 @@ export default function Home() {
   const [type, setType] = useState("");
   const [msg, setMsg] = useState("");
   const [id, setId] = useState();
+  const [name_ev, setName_ev] = useState("");
+  const [image_ev, setImage_ev] = useState("");
+  const [type_ev, setType_ev] = useState("");
+  const [msg_ev, setMsg_ev] = useState("");
+  const [count_ev, setCount_ev] = useState();
+  const [timestamp_ev, setTimestamp_ev] = useState();
   const nameRef = useRef();
   const imageRef = useRef();
   const messageRef = useRef();
@@ -34,18 +40,23 @@ export default function Home() {
       )
       .then((res) => {
         // setData(res.data);
-        console.log(res.data);
+        setName_ev(res.data[0].name);
+        setImage_ev(res.data[0].image);
+        setMsg_ev(res.data[0].message);
+        setType_ev(res.data[0].type);
+        setCount_ev(res.data[0].count);
+        setTimestamp_ev(res.data[0].timestamp);
+        // console.log(res.data[0].name);
       })
       .catch((err) => {
         console.error(err.response);
-        console.error(err.response.data);
         setError("Complete el formulario");
       });
   };
 
   useEffect(() => {
     const socketInitializer = async () => {
-      await fetch("/api/date-time");
+      await fetch("/api/socket");
 
       socket.on("connect", () => {
         console.log("connected");
@@ -96,7 +107,12 @@ export default function Home() {
               <h3>{error}</h3>
             </div>
           )}
-          <button onClick={handleSocket}>Enviar Datos</button>
+          <div className="btn">
+            <button type="submint">Enviar evento</button>
+            <button onClick={handleSocket}>Difundir el evento</button>
+          </div>
+        </form>
+        <div className="grid">
           <div className="socket">
             <h3>Socket FreeWaves</h3>
             <ul className="ul">
@@ -107,7 +123,18 @@ export default function Home() {
               <li>Type: {type}</li>
             </ul>
           </div>
-        </form>
+          <div className="socket">
+            <h3>Api FreeWaves</h3>
+            <ul className="ul">
+              <label>Name: {name_ev} </label>
+              <li>Image: {image_ev} </li>
+              <li>Message:{msg_ev}</li>
+              <li>Type:{type_ev} </li>
+              <li>Count:{count_ev} </li>
+              <li>Timestamp:{timestamp_ev} </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </>
   );

@@ -1,9 +1,7 @@
-import { Server } from "socket.io"; // Conecto el servver HTTP a Socket.io, utilizamos la clase Server del paquete Socket.IO.
 import { z, ZodError } from "zod";
-import { v4 as RandomId } from "uuid";
-var STORE = []; // objetos
+var STORE = []; // eventos
 
-export async function handler(req, res) {
+export default async function handlerTime(req, res) {
   const objectSchema = z.object({
     // Verificacion Inputs
     name: z.string().min(1, "Name es requerido"),
@@ -40,7 +38,7 @@ export async function handler(req, res) {
       }
 
       // console.log(STORE);
-      return res.json(STORE, "objeto recivido");
+      return res.status(200).json(STORE, "evento recibido");
     } catch (e) {
       if (e instanceof ZodError) {
         return res.status(400).json({
@@ -58,27 +56,3 @@ export async function handler(req, res) {
     return res.status(400).json({ error: "El metodo no existe" });
   }
 }
-
-var DATA_WS = [];
-const SocketHandler = (req, res) => {
-  if (res.socket.server.io) {
-    console.log("Socket ya esta inicializado");
-  } else {
-    console.log("Socket esta inicializando");
-    const io = new Server(res.socket.server);
-    res.socket.server.io = io;
-    io.on("connection", (socket) => {
-      console.log("id user : ", socket.id);
-      socket.on("cliente:EVENTO", (data) => {
-        // console.log("EVENTO: ", data);
-        const dataEvento = { ...data, id: RandomId() };
-        // console.log(dataEvento);
-        DATA_WS.push(dataEvento);
-        socket.broadcast.emit("server:EVENTO", dataEvento);
-      });
-    });
-  }
-  res.end();
-};
-
-export default SocketHandler;

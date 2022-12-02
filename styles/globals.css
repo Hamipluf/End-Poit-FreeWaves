@@ -39,3 +39,21 @@ body {
   font-size: 1.3rem;
   padding: 5px 0;
 }
+.grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+form > .btn{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 10px;
+  margin: 5px;
+}
+form >.btn > button{
+  margin: 5px;
+  padding: 10px 0;
+  background-color: #040404;
+  color: #f6f6f6;
+  font-size: 1rem;
+  font-weight: 600;
+}
