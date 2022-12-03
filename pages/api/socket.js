@@ -18,6 +18,11 @@ const SocketHandler = (req, res) => {
         DATA_WS.push(dataEvento);
         socket.broadcast.emit("server:EVENTO", dataEvento);
       });
+      socket.on("cliente:STORE_ACT", (STORE) => {
+        // console.log(STORE);
+        const dataStore = STORE;
+        socket.broadcast.emit("server:STORE_ACT", dataStore);
+      });
     });
   }
   res.end();

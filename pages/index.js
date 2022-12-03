@@ -5,6 +5,7 @@ import { useRef } from "react";
 
 export default function Home() {
   const [error, setError] = useState();
+  const [data, setData] = useState();
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [type, setType] = useState("");
@@ -16,6 +17,12 @@ export default function Home() {
   const [msg_ev, setMsg_ev] = useState("");
   const [count_ev, setCount_ev] = useState();
   const [timestamp_ev, setTimestamp_ev] = useState();
+  const [name_store, setName_store] = useState("");
+  const [image_store, setImage_store] = useState("");
+  const [type_store, setType_store] = useState("");
+  const [msg_store, setMsg_store] = useState("");
+  const [count_store, setCount_store] = useState();
+  const [timestamp_store, setTimestamp_store] = useState();
   const nameRef = useRef();
   const imageRef = useRef();
   const messageRef = useRef();
@@ -39,7 +46,7 @@ export default function Home() {
         }
       )
       .then((res) => {
-        // setData(res.data);
+        setData(res.data[0]);
         setName_ev(res.data[0].name);
         setImage_ev(res.data[0].image);
         setMsg_ev(res.data[0].message);
@@ -69,6 +76,15 @@ export default function Home() {
         setType(evento.type);
         setMsg(evento.message);
       });
+      socket.on("server:STORE_ACT", (data) => {
+        // console.log(data)
+        setName_store(data.name)
+        setImage_store(data.image)
+        setMsg_store(data.message)
+        setCount_store(data.count)
+        setTimestamp_store(data.timestamp)
+        setType_store(data.type)
+      });
     };
 
     return socketInitializer;
@@ -85,6 +101,15 @@ export default function Home() {
       });
     } catch (error) {
       console.log(error);
+    }
+  };
+  const handleStore = (e) => {
+    e.preventDefault();
+    try {
+      // console.log(data);
+      socket.emit("cliente:STORE_ACT", data);
+    } catch (error) {
+      console.errror(error);
     }
   };
 
@@ -111,6 +136,11 @@ export default function Home() {
             <button type="submint">Enviar evento</button>
             <button onClick={handleSocket}>Difundir el evento</button>
           </div>
+          <div className="btn">
+            <button onClick={handleStore}>
+              Broadcast de STORE acutalizada
+            </button>
+          </div>
         </form>
         <div className="grid">
           <div className="socket">
@@ -134,6 +164,17 @@ export default function Home() {
               <li>Timestamp:{timestamp_ev} </li>
             </ul>
           </div>
+        </div>
+        <div className="socket">
+          <h3>Api FreeWaves STORE actualizada</h3>
+          <ul className="ul">
+            <label>Name: {name_store} </label>
+            <li>Image: {image_store} </li>
+            <li>Message:{msg_store}</li>
+            <li>Type:{type_store} </li>
+            <li>Count:{count_store} </li>
+            <li>Timestamp:{timestamp_store} </li>
+          </ul>
         </div>
       </div>
     </>
