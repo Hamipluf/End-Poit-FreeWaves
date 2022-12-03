@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Event Handler - API 1.0
+  description: |-
+    Esta api recibe un evento lo procesa depediendo del tipo que sea el evento y con un websocket que recibe el nuevo evento y el evento procesado, despues hace una difucion con los mismos
+
+  version: 1.0.0
+  contact:
+    email: ramirogumma@hotmail.com
+externalDocs:
+  description: Find out more about the develeoper
+  url: https://portafolio-nextjs-omega.vercel.app/
+servers:
+  - url: http://localhost:3000/api/date-time
+tags:
+  - name: handlerTime
+    description: Este endpoint manjea toda la info del evento que se manda, y lo procesa.
+  - name: SocketHandler
+    description:
+      Un websocket que recibe el nuevo evento y el evento procesado, despues
+      hace una difucion con los mismos.
+paths:
+  /api/date-time:
+    post:
+      tags:
+        - handlerTime
+      summary: Recibe el evento, lo procesa dependiendo del tipo y le agrega un timestamp con un contador por evento, ademas de verificar si los datos nviados son validos.
+      requestBody:
+        description: Envia un nuevo evento al server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: nombre del evento.
+                  example: Bandera Argentina
+                image:
+                  type: string
+                  description: Url de la imagen.
+                  example: https//:banderaargentina.com/
+                message:
+                  type: string
+                  description: mensage opcional
+                type:
+                  type: string
+                  description: tipo del evento.
+                  example: tipo 1
+
+        required: true
+      responses:
+        "200":
+          description: (evento recibido) el evento fue recibido en el servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: nombre del evento.
+                    example: Bandera Argentina
+                  image:
+                    type: string
+                    description: Url de la imagen.
+                    example: https//:banderaargentina.com/
+                  message:
+                    type: string
+                    description: mensage opcional
+                  type:
+                    type: string
+                    description: tipo del evento.
+                    example: tipo "1"
+                  count:
+                    type: number
+                    description: contador del evento tipo
+                    example: 1
+                  timestamp:
+                    type: number
+                    description: marca del tiempo en el que se mando el evento
+                    example: 21220221106
+
+        "400":
+          description: (BadRequest) los datos enviados son incorrectos o hay datos obligatorios no enviados'
+        "404":
+          description: (NotFuound) no se encontro la informacion
+        "500":
+          description: error en el servidor
